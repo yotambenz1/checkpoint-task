@@ -11,8 +11,8 @@ S3_BUCKET = os.getenv('S3_BUCKET')
 S3_PREFIX = os.getenv('S3_PREFIX', 'emails/')
 POLL_INTERVAL = int(os.getenv('POLL_INTERVAL', '10'))  # seconds
 
-sqs = boto3.client('sqs', region_name=os.getenv('AWS_REGION', 'us-east-1'))
-s3 = boto3.client('s3', region_name=os.getenv('AWS_REGION', 'us-east-1'))
+sqs = boto3.client('sqs', region_name=os.getenv('AWS_REGION', 'us-west-2'))
+s3 = boto3.client('s3', region_name=os.getenv('AWS_REGION', 'us-west-2'))
 
 def process_message(message):
     body = message['Body']
