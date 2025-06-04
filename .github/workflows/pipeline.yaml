@@ -6,15 +6,6 @@ on:
             - main
             - develop
     workflow_dispatch:
-        inputs:
-            env_to_deploy:
-                description: Deploying to Staging environment
-                required: true
-                type: choice
-                options:
-                    - staging
-                    - dev
-                default: staging
 
 jobs:
     setup-variables:
