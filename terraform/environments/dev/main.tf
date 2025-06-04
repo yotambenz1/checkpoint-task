@@ -71,7 +71,8 @@ module "ecr" {
 }
 
 module "ssm" {
-  source = "../../modules/ssm"
-  parameter_name = "/myapp/token"
+  source          = "../../modules/ssm"
+  parameter_name  = "/myapp/token"
   parameter_value = "your-token-value"
+  tags            = var.tags
 }
