@@ -1,0 +1,67 @@
+name: CI/CD
+
+on:
+    push:
+        branches:
+            - main
+            - develop
+    workflow_dispatch:
+
+jobs:
+    setup-variables:
+        runs-on: ubuntu-latest
+        outputs:
+            short_commit: ${{ steps.short_commit.outputs.SHORT_COMMIT }}
+            branch_name: ${{ steps.branch_name.outputs.BRANCH_ECR }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - id: short_commit
+              run: |
+                  echo "SHORT_COMMIT=$(echo $GITHUB_SHA | cut -c -7)" >> "$GITHUB_OUTPUT"
+            - id: branch_name
+              run: |
+                  echo "BRANCH_ECR=$(echo ${{ github.ref }} | cut -d/ -f3- | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
+
+    build-steps:
+        runs-on: ubuntu-latest
+        needs: [setup-variables]
+        strategy:
+            matrix:
+                app: [ "flask-app", "worker-app" ]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ vars.AWS_ACCESS_KEY }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ vars.AWS_REGION }}
+
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+
+            - name: Build and push Docker container to Amazon ECR
+              env:
+                  REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+              run: |
+                  export DOCKER_BUILDKIT=1
+                  docker pull ${{ env.REGISTRY }}/${{ matrix.app }}:latest || true
+                  docker build --cache-from ${{ env.REGISTRY }}/${{ matrix.app }}:latest --build-arg BUILDKIT_INLINE_CACHE=1 -f apps/${{ matrix.app }}/Dockerfile -t ${{ matrix.app }} .
+              shell: bash
+
+            - name: Push app to ECR
+              env:
+                  APP_TAG: ${{ needs.setup-variables.outputs.branch_name }}-${{ needs.setup-variables.outputs.short_commit }}
+              id: ecr
+              uses: jwalton/gh-ecr-push@v1
+              with:
+                  access-key-id: ${{ vars.AWS_ACCESS_KEY }}
+                  secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  region: ${{ vars.AWS_REGION }}
+                  local-image: ${{ matrix.app }}
+                  image: ${{ matrix.app }}:${{ env.APP_TAG }}, ${{ matrix.app }}:latest
