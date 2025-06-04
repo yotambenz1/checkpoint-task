@@ -1,6 +1,6 @@
 locals {
   repos_kms = [
-    "worker", "app"
+    "worker-app", "flask-app"
   ]
 }
 

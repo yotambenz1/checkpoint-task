@@ -64,6 +64,12 @@ module "sqs" {
   depends_on = [ module.vpc ]
 }
 
+module "ecr" {
+  source      = "../../modules/ecr"
+  environment = var.environment
+  depends_on = [ module.vpc ]
+}
+
 module "ssm" {
   source = "../../modules/ssm"
   parameter_name = "/myapp/token"
