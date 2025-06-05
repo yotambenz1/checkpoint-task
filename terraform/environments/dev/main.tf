@@ -66,9 +66,9 @@ module "ecr" {
   depends_on = [ module.vpc ]
 }
 
-module "ssm" {
+module "ssm" { # TODO: change parameter name and value
   source          = "../../modules/ssm"
-  parameter_name  = "/myapp/token"
-  parameter_value = "your-token-value"
+  parameter_name  = "/checkpoint/${var.environment}/token"
+  parameter_value = "$DJ!SAc$#45ex3RtYr"
   tags            = var.tags
 }
