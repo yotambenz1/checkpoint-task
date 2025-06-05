@@ -26,7 +26,12 @@ variable "memory" {
   type = string 
 }
 
-variable "environment_variables" { 
+variable "environment_variables_flask_app" { 
+  type = list(object({ name = string, value = string })) 
+  default = [] 
+}
+
+variable "environment_variables_worker_app" { 
   type = list(object({ name = string, value = string })) 
   default = [] 
 }

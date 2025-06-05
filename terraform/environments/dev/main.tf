@@ -37,9 +37,17 @@ module "ecs" {
   cluster_name        = "checkpoint-ecs-${var.environment}-cluster"
   cpu                 = "256"
   memory              = "512"
-  environment_variables = [
+  environment_variables_flask_app = [
     { name = "SQS_QUEUE_URL", value = module.sqs.queue_url },
-    { name = "S3_BUCKET", value = module.s3.bucket_name }
+    { name = "TOKEN_PARAM_NAME", value = "/checkpoint/${var.environment}/token" },
+    { name = "AWS_REGION", value = var.aws_region }
+  ]
+  environment_variables_worker_app = [
+    { name = "SQS_QUEUE_URL", value = module.sqs.queue_url },
+    { name = "S3_BUCKET", value = module.s3.bucket_name },
+    { name = "AWS_REGION", value = var.aws_region },
+    { name = "S3_PREFIX", value = "emails/" },
+    { name = "POLL_INTERVAL", value = "10" }
   ]
   service_name        = "checkpoint-ecs-${var.environment}-service"
   desired_count       = 1

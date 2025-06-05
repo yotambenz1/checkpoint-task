@@ -100,7 +100,7 @@ resource "aws_ecs_task_definition" "flask_app" {
           hostPort      = 5000
         }
       ]
-      environment = var.environment_variables
+      environment = var.environment_variables_flask_app
     }
   ])
 }
@@ -117,7 +117,7 @@ resource "aws_ecs_task_definition" "worker_app" {
     {
       name      = "worker-app"
       image     = "worker-app:latest"
-      environment = var.environment_variables
+      environment = var.environment_variables_worker_app
     }
   ])
 }
