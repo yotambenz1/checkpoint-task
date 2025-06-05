@@ -60,13 +60,16 @@ module "ecs" {
 module "s3" {
   source      = "../../modules/s3"
   environment = var.environment
+  worker_app_role_name   = module.ecs.ecs_task_execution_role_name_worker_app
   depends_on = [ module.vpc ]
 }
 
 module "sqs" {
   source      = "../../modules/sqs"
   environment = var.environment
-  depends_on = [ module.vpc ]
+  flask_app_role_name   = module.ecs.ecs_task_execution_role_name_flask_app
+  worker_app_role_name   = module.ecs.ecs_task_execution_role_name_worker_app
+  depends_on = [ module.ecs ]
 }
 
 module "ecr" {
