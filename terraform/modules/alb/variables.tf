@@ -23,6 +23,11 @@ variable "target_group_port" {
   type        = number
 }
 
+variable "lb_port" {
+  description = "The port of the load balancer"
+  type        = number
+}
+
 variable "target_group_protocol" {
   description = "The protocol of the target group"
   type        = string

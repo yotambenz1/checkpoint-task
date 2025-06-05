@@ -19,7 +19,8 @@ module "alb" {
   alb_name            = "checkpoint-${var.environment}-alb"
   public_subnet_ids   = module.vpc.public_subnet_ids
   environment         = var.environment
-  target_group_port   = 5000 # TODO: change to 80
+  target_group_port   = 5000
+  lb_port             = 80
   vpc_id              = module.vpc.vpc_id
   target_group_protocol = "HTTP"
   max_capacity        = 3
@@ -37,9 +38,17 @@ module "ecs" {
   cluster_name        = "checkpoint-ecs-${var.environment}-cluster"
   cpu                 = "256"
   memory              = "512"
-  environment_variables = [
+  environment_variables_flask_app = [
     { name = "SQS_QUEUE_URL", value = module.sqs.queue_url },
-    { name = "S3_BUCKET", value = module.s3.bucket_name }
+    { name = "TOKEN_PARAM_NAME", value = "/checkpoint/${var.environment}/token" },
+    { name = "AWS_REGION", value = var.aws_region }
+  ]
+  environment_variables_worker_app = [
+    { name = "SQS_QUEUE_URL", value = module.sqs.queue_url },
+    { name = "S3_BUCKET", value = module.s3.bucket_name },
+    { name = "AWS_REGION", value = var.aws_region },
+    { name = "S3_PREFIX", value = "emails/" },
+    { name = "POLL_INTERVAL", value = "10" }
   ]
   service_name        = "checkpoint-ecs-${var.environment}-service"
   desired_count       = 1
@@ -51,13 +60,16 @@ module "ecs" {
 module "s3" {
   source      = "../../modules/s3"
   environment = var.environment
+  worker_app_role_name   = module.ecs.ecs_task_execution_role_name_worker_app
   depends_on = [ module.vpc ]
 }
 
 module "sqs" {
   source      = "../../modules/sqs"
   environment = var.environment
-  depends_on = [ module.vpc ]
+  flask_app_role_name   = module.ecs.ecs_task_execution_role_name_flask_app
+  worker_app_role_name   = module.ecs.ecs_task_execution_role_name_worker_app
+  depends_on = [ module.ecs ]
 }
 
 module "ecr" {
@@ -66,7 +78,7 @@ module "ecr" {
   depends_on = [ module.vpc ]
 }
 
-module "ssm" { # TODO: change parameter name and value
+module "ssm" {
   source          = "../../modules/ssm"
   parameter_name  = "/checkpoint/${var.environment}/token"
   parameter_value = "$DJ!SAc$#45ex3RtYr"

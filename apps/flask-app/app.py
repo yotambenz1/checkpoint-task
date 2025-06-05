@@ -8,7 +8,7 @@ app = Flask(__name__)
 # AWS clients
 ssm = boto3.client('ssm', region_name=os.getenv('AWS_REGION', 'us-west-2'))
 sqs = boto3.client('sqs', region_name=os.getenv('AWS_REGION', 'us-west-2'))
-# TODO: change the usage of the environment variable from .env to ECS task definition
+
 # Environment variables (set these in your ECS task or .env for local dev)
 SQS_QUEUE_URL = os.getenv('SQS_QUEUE_URL')
 TOKEN_PARAM_NAME = os.getenv('TOKEN_PARAM_NAME', '/checkpoint/dev/token')

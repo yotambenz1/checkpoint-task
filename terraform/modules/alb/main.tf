@@ -48,7 +48,7 @@ resource "aws_lb_target_group" "target_group" {
     protocol            = var.target_group_protocol
     matcher             = "200"
     timeout             = "3"
-    path                = "/v1/status" # TODO: change to /v1/health
+    path                = "/v1/health"
     unhealthy_threshold = "2"
   }
 
@@ -60,7 +60,7 @@ resource "aws_lb_target_group" "target_group" {
 
 resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_alb.application_load_balancer.id
-  port              = var.target_group_port
+  port              = var.lb_port
   protocol          = var.target_group_protocol
 
   default_action {
