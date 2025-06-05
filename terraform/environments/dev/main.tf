@@ -19,7 +19,8 @@ module "alb" {
   alb_name            = "checkpoint-${var.environment}-alb"
   public_subnet_ids   = module.vpc.public_subnet_ids
   environment         = var.environment
-  target_group_port   = 5000 # TODO: change to 80
+  target_group_port   = 5000
+  lb_port             = 80
   vpc_id              = module.vpc.vpc_id
   target_group_protocol = "HTTP"
   max_capacity        = 3
@@ -74,7 +75,7 @@ module "ecr" {
   depends_on = [ module.vpc ]
 }
 
-module "ssm" { # TODO: change parameter name and value
+module "ssm" { # TODO: change parameter value
   source          = "../../modules/ssm"
   parameter_name  = "/checkpoint/${var.environment}/token"
   parameter_value = "$DJ!SAc$#45ex3RtYr"
