@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 module "sqs_queues" {
   source = "terraform-aws-modules/sqs/aws"
 
@@ -12,20 +14,15 @@ module "sqs_queues" {
       sid       = "QueuePolicy"
       effect    = "Allow"
       actions   = ["SQS:SendMessage"]
-      resources = ["arn:aws:sqs:us-west-2:684736489365:SQSToS3-${each.key}.fifo"]
+      resources = ["arn:aws:sqs:us-west-2:${data.aws_caller_identity.current.account_id}:SQSToS3-${each.key}.fifo"]
 
       principals = [
         {
-          type        = "Service"
-          identifiers = ["sns.amazonaws.com"]
-        }
-      ]
-
-      conditions = [ # TODO: change to match the ALB ARN
-        {
-          test     = "ArnEquals"
-          variable = "aws:SourceArn"
-          values   = ["arn:aws:sns:us-west-2:684736489365:sqs-to-s3-${each.key}.fifo"]
+          type        = "AWS"
+          identifiers = [
+            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.flask_app_role_name}",
+            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.worker_app_role_name}"
+          ]
         }
       ]
     }
@@ -44,12 +41,12 @@ module "sqs_queues" {
       sid       = "__owner_statement"
       effect    = "Allow"
       actions   = ["SQS:*"]
-      resources = ["arn:aws:sqs:us-west-2:684736489365:SQSToS3-DLQ-${each.key}.fifo"]
+      resources = ["arn:aws:sqs:us-west-2:${data.aws_caller_identity.current.account_id}:SQSToS3-DLQ-${each.key}.fifo"]
 
       principals = [
         {
           type        = "AWS"
-          identifiers = ["arn:aws:iam::684736489365:root"]
+          identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
         }
       ]
     }

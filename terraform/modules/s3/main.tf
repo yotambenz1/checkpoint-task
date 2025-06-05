@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 module "s3_buckets" {
   source = "terraform-aws-modules/s3-bucket/aws"
 
@@ -31,6 +33,23 @@ module "s3_buckets" {
       }
     }
   }
+  attach_policy = true
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "s3:PutObject"
+        Principal = {
+          AWS = [
+            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.worker_app_role_name}"
+          ]
+        }
+        Resource = "arn:aws:s3:::${module.s3_buckets[each.key].id}/*"
+      }
+    ]
+  })
+  
   force_destroy                          = true
   transition_default_minimum_object_size = "varies_by_storage_class"
 } 
