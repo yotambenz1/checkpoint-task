@@ -35,12 +35,8 @@ module "ecs" {
   environment         = var.environment
   load_balancer_security_group_id = module.alb.alb_security_group_id
   cluster_name        = "checkpoint-ecs-${var.environment}-cluster"
-  task_family         = "checkpoint-ecs-${var.environment}-task"
   cpu                 = "256"
   memory              = "512"
-  container_name      = "checkpoint-ecs-${var.environment}-app"
-  container_image     = "your-docker-image:latest"
-  container_port      = 5000
   environment_variables = [
     { name = "SQS_QUEUE_URL", value = module.sqs.queue_url },
     { name = "S3_BUCKET", value = module.s3.bucket_name }
